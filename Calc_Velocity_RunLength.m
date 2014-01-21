@@ -4,7 +4,7 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 % length (um).
 %
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
-%    Calc_Velocity_RunLength(velocity,runlength)
+%    Calc_Velocity_RunLength(velocity,runlength,MaxRun,VelMax)
 %
 %INPUT  velocity - velocity measurements (nm/s)
 %       runlength - run length measurements (nm/s) 
@@ -29,7 +29,7 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
 %using programs originally written by the Danuser lab: 
 %
-%           (Danuser command)   -->     (Reck-Peterson implementation)
+%           (Danuser command)   -->     (Sub-function command)
 %           plotMMGFit          -->     plotFit
 %           fitSingleExpCDF     -->     fitSingleExp
 %           pltExpFitHist       -->     pltExpFit
