@@ -1,0 +1,431 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Calc_Velocity_RunLength</title><meta name="generator" content="MATLAB 8.2"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-01-21"><meta name="DC.source" content="Calc_Velocity_RunLength.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Script that will run fitting and plotting</a></li><li><a href="#5">Subfunction for fitting exponential distribution</a></li><li><a href="#6">Plotting single exponential</a></li><li><a href="#7">Plot histogram and fit</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength)
+</pre><pre class="codeinput"><span class="comment">% Calc_Velocity_RunLength calculates the average velocity and run length for a</span>
+<span class="comment">% dataset of single molecule runs. Inputs are velocity (nm/s) and run</span>
+<span class="comment">% length (um).</span>
+<span class="comment">%</span>
+<span class="comment">%SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...</span>
+<span class="comment">%    Calc_Velocity_RunLength(velocity,runlength)</span>
+<span class="comment">%</span>
+<span class="comment">%INPUT  velocity - velocity in nm/s</span>
+<span class="comment">%       runlength - run length in um</span>
+<span class="comment">%       MaxRun - maximum run length distance used for plotting</span>
+<span class="comment">%       VelMax - maximum velocity used for plotting</span>
+<span class="comment">%</span>
+<span class="comment">%DEFAULTS</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">%Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)</span>
+<span class="comment">%using programs originally written by the Danuser lab:</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+</pre><h2>Script that will run fitting and plotting<a name="3"></a></h2><pre class="codeinput">close <span class="string">all</span>;
+RunRange = 0:1:MaxRun;                         <span class="comment">%Range for histogram</span>
+VelMax = 200;
+
+N=size(velocity,1);                     <span class="comment">%Determine number of entries</span>
+
+Velocity_mean=mean(velocity);           <span class="comment">%Calculate mean velocity</span>
+Velocity_std=std(velocity);             <span class="comment">%Calculate std. dev. of velocity</span>
+bin_size=3.5*Velocity_std/N^(1/3);      <span class="comment">%Determine bin size</span>
+plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);   <span class="comment">%Plot histogram of velocity</span>
+[RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);      <span class="comment">%Determine exponential decay of run lengths</span>
+pltExpFitHist(runlength,0,RunRange);     <span class="comment">%Plot histogram of run lengths</span>
+Runlength_mean=RL_mean;                 <span class="comment">%Save output</span>
+Runlength_std=RL_std;                   <span class="comment">%Save output</span>
+
+disp([<span class="string">'Average run length = '</span>,num2str(Runlength_mean),<span class="string">' +/- '</span>,num2str(Runlength_std)])  <span class="comment">%Print to console run length +/- std. dev</span>
+disp([<span class="string">'Average velocity = '</span>,num2str(Velocity_mean),<span class="string">' +/- '</span>,num2str(Velocity_std)])      <span class="comment">%Print to console velocity +/- std. dev</span>
+</pre><pre class="codeoutput">Undefined function or variable 'MaxRun'.
+
+Error in Calc_Velocity_RunLength (line 26)
+RunRange = 0:1:MaxRun;                         %Range for histogram
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2>Subfunction for fitting exponential distribution<a name="5"></a></h2><pre class="codeinput"><span class="keyword">function</span> plotFit(data,numComponents,numBins,normalized)
+
+options = statset(<span class="string">'Display'</span>,<span class="string">'final'</span>);
+<span class="keyword">if</span> isempty(numComponents)
+    BIC = zeros(1,6);
+    <span class="keyword">for</span> k = 1:6
+        a = gmdistribution.fit(data(:),k,<span class="string">'Options'</span>,options);
+        BIC(k)= a.BIC;
+        clear <span class="string">a</span>;
+    <span class="keyword">end</span>
+    [minBIC,numComponents] = min(BIC);
+<span class="keyword">end</span>
+
+
+fit = gmdistribution.fit(data(:),numComponents,<span class="string">'Options'</span>,options);
+<span class="comment">%figure; hist(data(:),numBins);</span>
+
+[histVal,Xvals]=hist(data(:),numBins);
+
+<span class="keyword">if</span> normalized==1
+    histVal=histVal/(sum(histVal)*(Xvals(2)-Xvals(1)));
+    count=1;
+<span class="keyword">else</span>
+    count=(sum(histVal)*(Xvals(2)-Xvals(1)));
+<span class="keyword">end</span>
+figure; set(0,<span class="string">'DefaultAxesFontSize'</span>,16); bar(Xvals,histVal);
+normBinWidth=(Xvals(2)-Xvals(1))/10;
+hold <span class="string">on</span>;
+<span class="keyword">for</span> i=1:fit.NComponents
+    mmgY(i,:)=fit.PComponents(i)*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i)));
+    plot(min(Xvals):normBinWidth:max(Xvals),fit.PComponents(i)*count*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i))),<span class="string">'r'</span>,<span class="string">'LineWidth'</span>,2);
+<span class="keyword">end</span>
+mmgYcomb=sum(mmgY);
+plot(min(Xvals):normBinWidth:max(Xvals),count*mmgYcomb',<span class="string">'g'</span>,<span class="string">'LineWidth'</span>,2);
+
+set(gcf,<span class="string">'color'</span>,<span class="string">'w'</span>);
+axis([min(Xvals)-(Xvals(2)-Xvals(1)) max(Xvals)*1.1 0 max(histVal)*1.1]);
+hold <span class="string">off</span>;
+
+<span class="keyword">if</span> ~isempty(numComponents)
+    BIC=fit.BIC;
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2>Plotting single exponential<a name="6"></a></h2><pre class="codeinput"><span class="keyword">function</span> [mu,mu_std] = fitSingleExp(data,range,plotDistr)
+<span class="comment">% mu - fitted parameter</span>
+<span class="comment">% mu_std = error of the fitted parameter</span>
+<span class="comment">% data = list of the data to be fit with a single exponential function</span>
+<span class="comment">%range = either number of bins or min:increment:max as described in hist</span>
+<span class="comment">%function</span>
+<span class="comment">% plotDistr dummy variable if 1-plots 1-CDF</span>
+<span class="comment">%                             if 2-plots pdf</span>
+<span class="comment">%                             if 3 plots both 1-cdf and pdf</span>
+<span class="comment">%</span>
+opts = optimset(<span class="string">'Jacobian'</span>, <span class="string">'off'</span>, <span class="keyword">...</span>
+    <span class="string">'MaxFunEvals'</span>, 1e4, <span class="keyword">...</span>
+    <span class="string">'MaxIter'</span>, 1e4, <span class="keyword">...</span>
+    <span class="string">'Display'</span>, <span class="string">'off'</span>, <span class="keyword">...</span>
+    <span class="string">'TolX'</span>, 1e-8, <span class="keyword">...</span>
+    <span class="string">'Tolfun'</span>, 1e-8);
+
+[ECDF,t_ECDF] = ecdf(data);
+<span class="comment">%get the parameter error</span>
+[mu,resnorm,~,~,~,~,J] = lsqnonlin(@costFct, mean(data), [], [], opts, t_ECDF, ECDF);
+
+J = full(J);
+mu_std = sqrt(resnorm/(numel(t_ECDF)-2)*inv(J'*J));
+
+<span class="keyword">if</span> plotDistr==4
+
+    <span class="keyword">return</span>
+
+<span class="keyword">end</span>
+
+
+<span class="comment">%plotting</span>
+<span class="keyword">if</span> plotDistr==1 || plotDistr==3
+    T = 1-exp(-1./mu.*t_ECDF(1));
+    ECDF1 = 1 - exp(-1./mu.*t_ECDF);
+    ECDF1 = (ECDF1 - T) / (1-T);
+
+    figure; hold <span class="string">on</span>; title(<span class="string">'1-CDF'</span>);
+    plot(t_ECDF,1-ECDF1,<span class="string">'r'</span>);
+    plot(t_ECDF,1-ECDF,<span class="string">'b*'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> plotDistr==2 || plotDistr==3
+    figure; hold <span class="string">on</span>; title(<span class="string">'PDF'</span>);
+    [Y,X]=hist(data,range);
+    dx=(X(2)-X(1))/10;
+    t=0:dx:max(X);
+    PDF1 = 1/mu * exp(-1/mu * t);
+    PDF1 = PDF1*sum(Y)*dx*10;
+    bar(X,Y); plot(t,PDF1,<span class="string">'r'</span>,<span class="string">'lineWidth'</span>,2);
+<span class="keyword">end</span>
+
+
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> v = costFct(mu, t_ECDF, ECDF)
+T = 1-exp(-1./mu.*t_ECDF(1));
+CDF = 1 - exp(-1./mu.*t_ECDF);
+CDF = (CDF - T) / (1-T);
+v = CDF - ECDF;
+<span class="keyword">end</span>
+</pre><h2>Plot histogram and fit<a name="7"></a></h2><pre class="codeinput"><span class="keyword">function</span> pltExpFitHist(data,lowerCutOff,binRange)
+
+[mustats(1),mustats(2)] = fitSingleExp(data,binRange,4);
+yval=hist(data,binRange);
+<span class="comment">% area under curve above cutoff minRunLength:</span>
+a = exp(-lowerCutOff/mustats(1));
+<span class="comment">% normalize to this area:</span>
+yval2 = yval*a/sum(yval*(binRange(2)-binRange(1)));
+figure; set(0,<span class="string">'DefaultAxesFontSize'</span>,16);
+bar(binRange,yval2); hold <span class="string">on</span>;
+(binRange(2)-binRange(1))/100;
+binRange2=binRange(1):(binRange(2)-binRange(1))/100:binRange(end);
+
+plot(binRange2,exp(-binRange2/mustats(1))/mustats(1),<span class="string">'r'</span>,<span class="string">'linewidth'</span>,2);
+axis([binRange(1) max(binRange)*1.1 0 max(yval2)*1.1]);
+set(gcf,<span class="string">'color'</span>,<span class="string">'w'</span>);
+
+hold <span class="string">off</span>;
+figure; set(0,<span class="string">'DefaultAxesFontSize'</span>,16);
+bar(binRange,yval); hold <span class="string">on</span>;
+plot(binRange2,exp(-binRange2/mustats(1))/mustats(1) / a*sum(yval*(binRange(2)-binRange(1))),<span class="string">'r'</span>,<span class="string">'linewidth'</span>,2);
+axis([0 max(binRange)*1.1 0 max(yval)*1.1]);
+set(gcf,<span class="string">'color'</span>,<span class="string">'w'</span>);
+hold <span class="string">off</span>;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength)
+% Calc_Velocity_RunLength calculates the average velocity and run length for a
+% dataset of single molecule runs. Inputs are velocity (nm/s) and run
+% length (um).
+%
+%SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
+%    Calc_Velocity_RunLength(velocity,runlength)
+%
+%INPUT  velocity - velocity in nm/s
+%       runlength - run length in um 
+%       MaxRun - maximum run length distance used for plotting
+%       VelMax - maximum velocity used for plotting
+%
+%DEFAULTS
+%
+%
+%Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
+%using programs originally written by the Danuser lab:
+%
+%
+%
+%
+
+%% Script that will run fitting and plotting
+close all;
+RunRange = 0:1:MaxRun;                         %Range for histogram
+VelMax = 200;
+
+N=size(velocity,1);                     %Determine number of entries
+
+Velocity_mean=mean(velocity);           %Calculate mean velocity
+Velocity_std=std(velocity);             %Calculate std. dev. of velocity
+bin_size=3.5*Velocity_std/N^(1/3);      %Determine bin size
+plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);   %Plot histogram of velocity 
+[RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);      %Determine exponential decay of run lengths
+pltExpFitHist(runlength,0,RunRange);     %Plot histogram of run lengths
+Runlength_mean=RL_mean;                 %Save output
+Runlength_std=RL_std;                   %Save output
+
+disp(['Average run length = ',num2str(Runlength_mean),' +/- ',num2str(Runlength_std)])  %Print to console run length +/- std. dev
+disp(['Average velocity = ',num2str(Velocity_mean),' +/- ',num2str(Velocity_std)])      %Print to console velocity +/- std. dev
+end
+
+%% Subfunction for fitting exponential distribution
+
+function plotFit(data,numComponents,numBins,normalized)
+
+options = statset('Display','final');
+if isempty(numComponents)
+    BIC = zeros(1,6);
+    for k = 1:6
+        a = gmdistribution.fit(data(:),k,'Options',options);
+        BIC(k)= a.BIC;
+        clear a;
+    end
+    [minBIC,numComponents] = min(BIC);
+end
+
+
+fit = gmdistribution.fit(data(:),numComponents,'Options',options);
+%figure; hist(data(:),numBins);
+
+[histVal,Xvals]=hist(data(:),numBins);
+
+if normalized==1
+    histVal=histVal/(sum(histVal)*(Xvals(2)-Xvals(1)));
+    count=1;
+else
+    count=(sum(histVal)*(Xvals(2)-Xvals(1)));
+end
+figure; set(0,'DefaultAxesFontSize',16); bar(Xvals,histVal);
+normBinWidth=(Xvals(2)-Xvals(1))/10;
+hold on;
+for i=1:fit.NComponents
+    mmgY(i,:)=fit.PComponents(i)*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i)));
+    plot(min(Xvals):normBinWidth:max(Xvals),fit.PComponents(i)*count*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i))),'r','LineWidth',2);
+end
+mmgYcomb=sum(mmgY);
+plot(min(Xvals):normBinWidth:max(Xvals),count*mmgYcomb','g','LineWidth',2);
+
+set(gcf,'color','w');
+axis([min(Xvals)-(Xvals(2)-Xvals(1)) max(Xvals)*1.1 0 max(histVal)*1.1]);
+hold off;
+
+if ~isempty(numComponents)
+    BIC=fit.BIC;
+end
+
+end
+
+%% Plotting single exponential
+   
+function [mu,mu_std] = fitSingleExp(data,range,plotDistr)
+% mu - fitted parameter
+% mu_std = error of the fitted parameter
+% data = list of the data to be fit with a single exponential function
+%range = either number of bins or min:increment:max as described in hist
+%function
+% plotDistr dummy variable if 1-plots 1-CDF
+%                             if 2-plots pdf
+%                             if 3 plots both 1-cdf and pdf
+%
+opts = optimset('Jacobian', 'off', ...
+    'MaxFunEvals', 1e4, ...
+    'MaxIter', 1e4, ...
+    'Display', 'off', ...
+    'TolX', 1e-8, ...
+    'Tolfun', 1e-8);
+
+[ECDF,t_ECDF] = ecdf(data);
+%get the parameter error
+[mu,resnorm,~,~,~,~,J] = lsqnonlin(@costFct, mean(data), [], [], opts, t_ECDF, ECDF);
+
+J = full(J);
+mu_std = sqrt(resnorm/(numel(t_ECDF)-2)*inv(J'*J));
+
+if plotDistr==4
+    
+    return
+    
+end
+
+
+%plotting
+if plotDistr==1 || plotDistr==3
+    T = 1-exp(-1./mu.*t_ECDF(1));
+    ECDF1 = 1 - exp(-1./mu.*t_ECDF);
+    ECDF1 = (ECDF1 - T) / (1-T);
+    
+    figure; hold on; title('1-CDF');
+    plot(t_ECDF,1-ECDF1,'r');
+    plot(t_ECDF,1-ECDF,'b*');
+    hold off;
+end
+
+if plotDistr==2 || plotDistr==3
+    figure; hold on; title('PDF');
+    [Y,X]=hist(data,range);
+    dx=(X(2)-X(1))/10;
+    t=0:dx:max(X);
+    PDF1 = 1/mu * exp(-1/mu * t);
+    PDF1 = PDF1*sum(Y)*dx*10;
+    bar(X,Y); plot(t,PDF1,'r','lineWidth',2);
+end
+
+
+end
+
+
+function v = costFct(mu, t_ECDF, ECDF)
+T = 1-exp(-1./mu.*t_ECDF(1));
+CDF = 1 - exp(-1./mu.*t_ECDF);
+CDF = (CDF - T) / (1-T);
+v = CDF - ECDF;
+end
+
+%% Plot histogram and fit
+
+function pltExpFitHist(data,lowerCutOff,binRange)
+
+[mustats(1),mustats(2)] = fitSingleExp(data,binRange,4);
+yval=hist(data,binRange);
+% area under curve above cutoff minRunLength:
+a = exp(-lowerCutOff/mustats(1));
+% normalize to this area:
+yval2 = yval*a/sum(yval*(binRange(2)-binRange(1)));
+figure; set(0,'DefaultAxesFontSize',16);
+bar(binRange,yval2); hold on;
+(binRange(2)-binRange(1))/100;
+binRange2=binRange(1):(binRange(2)-binRange(1))/100:binRange(end);
+
+plot(binRange2,exp(-binRange2/mustats(1))/mustats(1),'r','linewidth',2);
+axis([binRange(1) max(binRange)*1.1 0 max(yval2)*1.1]);
+set(gcf,'color','w');
+
+hold off;
+figure; set(0,'DefaultAxesFontSize',16);
+bar(binRange,yval); hold on;
+plot(binRange2,exp(-binRange2/mustats(1))/mustats(1) / a*sum(yval*(binRange(2)-binRange(1))),'r','linewidth',2);
+axis([0 max(binRange)*1.1 0 max(yval)*1.1]);
+set(gcf,'color','w');
+hold off;
+end
+
+##### SOURCE END #####
+--></body></html>

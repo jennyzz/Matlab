@@ -1,17 +1,31 @@
-function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Velocity_RunLength(velocity,runlength)
-% Velocity_RunLength calculates the average velocity and run length for a
-% dataset. 
+function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength)
+% Calc_Velocity_RunLength calculates the average velocity and run length for a
+% dataset of single molecule runs. Inputs are velocity (nm/s) and run
+% length (um).
 %
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
-%    Velocity_RunLength(velocity,runlength)
+%    Calc_Velocity_RunLength(velocity,runlength)
 %
 %INPUT  velocity - velocity in nm/s
 %       runlength - run length in um 
+%       MaxRun - maximum run length distance used for plotting
+%       VelMax - maximum velocity used for plotting
+%
+%OUTPUT 
+%DEFAULTS
+%
+%
+%Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
+%using programs originally written by the Danuser lab:
+%
+%           plotMMGFit          -->     plotFit
+%           fitSingleExpCDF     -->     fitSingleExp
+%           pltExpFitHist       -->     pltExpFit
 
-%% Script that will run fitting and plotting
+%% Master function that will run fitting and plotting
 close all;
-RunRange = 0:1:30;                         %Range for histogram
-VelMax = 200;
+RunRange = 0:1:MaxRun;                  %Range for run length plot
+VelMax = 200;                           %Maximum velocity 
 
 N=size(velocity,1);                     %Determine number of entries
 
@@ -20,7 +34,7 @@ Velocity_std=std(velocity);             %Calculate std. dev. of velocity
 bin_size=3.5*Velocity_std/N^(1/3);      %Determine bin size
 plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);   %Plot histogram of velocity 
 [RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);      %Determine exponential decay of run lengths
-pltExpFitHist(runlength,0,RunRange);     %Plot histogram of run lengths
+pltExpFit(runlength,0,RunRange);     %Plot histogram of run lengths
 Runlength_mean=RL_mean;                 %Save output
 Runlength_std=RL_std;                   %Save output
 
@@ -143,7 +157,7 @@ end
 
 %% Plot histogram and fit
 
-function pltExpFitHist(data,lowerCutOff,binRange)
+function pltExpFit(data,lowerCutOff,binRange)
 
 [mustats(1),mustats(2)] = fitSingleExp(data,binRange,4);
 yval=hist(data,binRange);

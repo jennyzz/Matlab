@@ -1,16 +1,30 @@
-function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Velocity_RunLength(velocity,runlength)
-% Velocity_RunLength calculates the average velocity and run length for a
-% dataset. 
+function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength)
+% Calc_Velocity_RunLength calculates the average velocity and run length for a
+% dataset of single molecule runs. Inputs are velocity (nm/s) and run
+% length (um).
 %
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
-%    Velocity_RunLength(velocity,runlength)
+%    Calc_Velocity_RunLength(velocity,runlength)
 %
 %INPUT  velocity - velocity in nm/s
 %       runlength - run length in um 
+%       MaxRun - maximum run length distance used for plotting
+%       VelMax - maximum velocity used for plotting
+%
+%OUTPUT 
+%DEFAULTS
+%
+%
+%Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
+%using programs originally written by the Danuser lab:
+%
+%           plotMMGFit          -->     plotFit
+%           fitSingleExpCDF     -->     fitSingleExp
+%           pltExpFitHist       -->     
 
 %% Script that will run fitting and plotting
 close all;
-RunRange = 0:1:30;                         %Range for histogram
+RunRange = 0:1:MaxRun;                         %Range for histogram
 VelMax = 200;
 
 N=size(velocity,1);                     %Determine number of entries
