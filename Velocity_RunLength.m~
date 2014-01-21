@@ -1,0 +1,76 @@
+function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Velocity_RunLength(velocity,runlength)
+% Velocity_RunLength calculates the average velocity and run length for a
+% dataset. 
+%
+%SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
+%    Velocity_RunLength(velocity,runlength)
+%
+%INPUT  velocity - velocity in nm/s
+%       runlength - run length in um
+%% Script that will run fitting and plotting
+close all;
+range = 0:1:30;                         %Range for histogram
+
+N=size(velocity,1);                     %Determine number of entries
+
+Velocity_mean=mean(velocity);           %Calculate mean velocity
+Velocity_std=std(velocity);             %Calculate std. dev. of velocity
+bin_size=3.5*Velocity_std/N^(1/3);      %Determine bin size
+plotFit(velocity,1,bin_size/2:bin_size:250,0);   %Plot histogram of velocity 
+[RL_mean,RL_std]=fitSingleExpCDF(runlength,range,2);      %Determine exponential decay of run lengths
+plotExpFitHist(runlength,0,range);     %Plot histogram of run lengths
+Runlength_mean=RL_mean;                 %Save output
+Runlength_std=RL_std;                   %Save output
+
+disp(['Average run length = ',num2str(Runlength_mean),' +/- ',num2str(Runlength_std)])  %Print to console run length +/- std. dev
+disp(['Average velocity = ',num2str(Velocity_mean),' +/- ',num2str(Velocity_std)])      %Print to console velocity +/- std. dev
+end
+
+%% Subfunction for fitting exponential distribution
+
+function plotFit(data,numComponents,numBins,normalized)
+
+options = statset('Display','final');
+if isempty(numComponents)
+    BIC = zeros(1,6);
+    for k = 1:6
+        a = gmdistribution.fit(data(:),k,'Options',options);
+        BIC(k)= a.BIC;
+        clear a;
+    end
+    [minBIC,numComponents] = min(BIC);
+end
+ 
+
+fit = gmdistribution.fit(data(:),numComponents,'Options',options);
+%figure; hist(data(:),numBins);
+
+[histVal,Xvals]=hist(data(:),numBins);
+
+if normalized==1
+    histVal=histVal/(sum(histVal)*(Xvals(2)-Xvals(1)));
+    count=1;
+else
+    count=(sum(histVal)*(Xvals(2)-Xvals(1)));
+end
+figure; set(0,'DefaultAxesFontSize',16); bar(Xvals,histVal);
+normBinWidth=(Xvals(2)-Xvals(1))/10;
+hold on;
+for i=1:fit.NComponents
+    mmgY(i,:)=fit.PComponents(i)*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i)));
+    plot(min(Xvals):normBinWidth:max(Xvals),fit.PComponents(i)*count*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i))),'r','LineWidth',2);
+end
+mmgYcomb=sum(mmgY);
+plot(min(Xvals):normBinWidth:max(Xvals),count*mmgYcomb','g','LineWidth',2);
+
+set(gcf,'color','w');
+axis([min(Xvals)-(Xvals(2)-Xvals(1)) max(Xvals)*1.1 0 max(histVal)*1.1]);
+hold off;
+
+if ~isempty(numComponents)
+    BIC=fit.BIC;
+end 
+
+%% Plotting single exponential
+   
+function fitSingle
