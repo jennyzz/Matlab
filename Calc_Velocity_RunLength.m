@@ -26,8 +26,8 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %            Exponential distribution of run lengths (fraction of runs)
 %            Exponential distribution of run lengths (number of runs)
 %           
-%Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
-%using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu/): 
+%Written and used by the Reck-Peterson lab (http://reck-peterson.med.harvard.edu)
+%using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu): 
 %
 %           (Danuser command)   -->     (Sub-function command)
 %           plotMMGFit          -->     plotFit
