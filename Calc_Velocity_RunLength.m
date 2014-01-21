@@ -1,4 +1,4 @@
-function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength)
+function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(velocity,runlength,varargin)
 % Calc_Velocity_RunLength calculates the average velocity and run length for a
 % dataset of single molecule runs. Inputs are velocity (nm/s) and run
 % length (um).
@@ -6,40 +6,77 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
 %    Calc_Velocity_RunLength(velocity,runlength)
 %
-%INPUT  velocity - velocity in nm/s
-%       runlength - run length in um 
-%       MaxRun - maximum run length distance used for plotting
-%       VelMax - maximum velocity used for plotting
+%INPUT  velocity - velocity measurements (nm/s)
+%       runlength - run length measurements (nm/s) 
+%       
+%       Optional: 
+%           MaxRun - maximum run length distance (um) used for plotting [Default = 30 um]
+%           VelMax - maximum velocity (nm/s) used for plotting [DEFAULT = 200 nm/s]
+%           
+%DEFAULTS   MaxRun = 30 um
+%           VelMax = 200 nm/s
 %
-%OUTPUT 
-%DEFAULTS
+%OUTPUT Runlength_mean = average run length determined from exponential fit
+%       Runlength_std = standard deviation of run length from expon. fit
+%       Velocity_mean = average velocity
+%       Velocity_std = standard deviation of velocity       
 %
-%
+%       Three plots:
+%            Velocity histogram
+%            Exponential distribution of run lengths (fraction of runs)
+%            Exponential distribution of run lengths (number of runs)
+%           
 %Written and used by the Reck-Peterson lab (reck-peterson.med.harvard.edu)
-%using programs originally written by the Danuser lab:
+%using programs originally written by the Danuser lab: 
 %
+%           (Danuser command)   -->     (Reck-Peterson implementation)
 %           plotMMGFit          -->     plotFit
 %           fitSingleExpCDF     -->     fitSingleExp
 %           pltExpFitHist       -->     pltExpFit
 
 %% Master function that will run fitting and plotting
-close all;
+close all;                              %Close all open plots
+
+%Check number of optional inputs. If > 2 send error. 
+numvarargs = length(varargin);
+if numvarargs > 2
+    error('myApp:argChk','Too many inputs; requires at most 2 optional inputs')
+end
+
+%Check that velocitues and run lengths are the same size
+if size(velocity,1) ~= size(runlength,1)
+    error('myApp:argChk','Velocity and run length are not the same size')
+end
+
+%Set defaults: MaxRun = 30 um; MaxVel = 200 nm/s
+optargs = {30 200};                     %Set defaults in optargs                 
+optargs(1:numvarargs) = varargin;       %For each emptpy value in varagin put in default
+MaxRun = cell2mat(optargs(:,1));        %Rename optarg(:,1) as MaxRun
+VelMax = cell2mat(optargs(:,2));        %Rename optarg(:,2) as VelMax
+
+%Inputs
 RunRange = 0:1:MaxRun;                  %Range for run length plot
-VelMax = 200;                           %Maximum velocity 
-
 N=size(velocity,1);                     %Determine number of entries
-
 Velocity_mean=mean(velocity);           %Calculate mean velocity
 Velocity_std=std(velocity);             %Calculate std. dev. of velocity
 bin_size=3.5*Velocity_std/N^(1/3);      %Determine bin size
-plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);   %Plot histogram of velocity 
-[RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);      %Determine exponential decay of run lengths
-pltExpFit(runlength,0,RunRange);     %Plot histogram of run lengths
-Runlength_mean=RL_mean;                 %Save output
-Runlength_std=RL_std;                   %Save output
 
-disp(['Average run length = ',num2str(Runlength_mean),' +/- ',num2str(Runlength_std)])  %Print to console run length +/- std. dev
-disp(['Average velocity = ',num2str(Velocity_mean),' +/- ',num2str(Velocity_std)])      %Print to console velocity +/- std. dev
+%Plot histogram of velocity
+plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);  
+
+%Determine exponential decay of run lengths
+[RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);
+
+%Plot histogram of run lengths along with fitted exponential decay
+pltExpFit(runlength,0,RunRange);     
+
+%Outputs
+Runlength_mean=RL_mean;                 
+Runlength_std=RL_std;                   
+
+%Print average run length and velocity to console
+disp(['Average run length = ',num2str(Runlength_mean),' +/- ',num2str(Runlength_std)])  
+disp(['Average velocity = ',num2str(Velocity_mean),' +/- ',num2str(Velocity_std)])      
 end
 
 %% Subfunction for fitting exponential distribution

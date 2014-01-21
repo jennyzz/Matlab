@@ -1,4 +1,5 @@
 function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Velocity_RunLength(velocity,runlength)
+% DISCONTINUED. This script has been renamed as Calc_Velocity_RunLength.
 % Velocity_RunLength calculates the average velocity and run length for a
 % dataset. 
 %
@@ -10,6 +11,9 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Velocity_RunL
 
 %% Script that will run fitting and plotting
 close all;
+
+error('myApp:argChk','This script has been discontinued. Use Calc_Velocity_Runlength instead.')
+
 RunRange = 0:1:30;                         %Range for histogram
 VelMax = 200;
 
