@@ -30,11 +30,6 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %           
 %Written and used by the Reck-Peterson lab (http://reck-peterson.med.harvard.edu)
 %using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu): 
-%
-%           (Danuser command)   -->     (Sub-function command)
-%           plotMMGFit          -->     plotFit
-%           fitSingleExpCDF     -->     fitSingleExp
-%           pltExpFitHist       -->     pltExpFit
 
 %% Read inputs and return errors
 close all;                              %Close all open plots
@@ -204,6 +199,11 @@ if VelocityFlag == 1
 end
 
 %% Subfunction for fitting exponential distribution
+%
+%           (Danuser command)   -->     (Sub-function command)
+%           plotMMGFit          -->     plotFit
+%           fitSingleExpCDF     -->     fitSingleExp
+%           pltExpFitHist       -->     pltExpFit
 
 function plotFit(data,numComponents,numBins,normalized)
 
