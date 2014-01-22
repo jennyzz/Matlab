@@ -172,7 +172,7 @@ end
 
 %Plot histogram of velocity
 if VelocityFlag == 1
-    plotFit(velocity,1,bin_size/2:bin_size:VelMax,0);  
+    plotFitVel(velocity,1,bin_size/2:bin_size:VelMax,0,Velocity_mean,Velocity_std); 
 end
 
 %Determine exponential decay of run lengths
@@ -180,15 +180,15 @@ if RunLengthFlag == 1
     [RL_mean,RL_std]=fitSingleExp(runlength,RunRange,4);
 end
 
-%Plot histogram of run lengths along with fitted exponential decay
-if RunLengthFlag == 1
-    pltExpFit(runlength,0,RunRange);     
-end
-
 %Outputs
 if RunLengthFlag == 1
     Runlength_mean=RL_mean;                 
     Runlength_std=RL_std;                   
+end
+
+%Plot histogram of run lengths along with fitted exponential decay
+if RunLengthFlag == 1
+    fancyHistRL(runlength,0,RunRange,Runlength_mean,Runlength_std); 
 end
 
 %Print average run length and velocity to console
@@ -200,13 +200,8 @@ if VelocityFlag == 1
 end
 
 %% Subfunction for fitting exponential distribution
-%
-%           (Danuser command)   -->     (Sub-function command)
-%           plotMMGFit          -->     plotFit
-%           fitSingleExpCDF     -->     fitSingleExp
-%           pltExpFitHist       -->     pltExpFit
 
-function plotFit(data,numComponents,numBins,normalized)
+function plotFitVel(data,numComponents,numBins,normalized,vel_mean, vel_std)
 
 options = statset('Display','final');
 if isempty(numComponents)
@@ -231,15 +226,17 @@ if normalized==1
 else
     count=(sum(histVal)*(Xvals(2)-Xvals(1)));
 end
-figure; set(0,'DefaultAxesFontSize',16); bar(Xvals,histVal);
+figure1 = figure('Color',[1 1 1]); 
+axes1 = axes('Parent',figure1,'FontName','Times New Roman');
+bar(Xvals,histVal,'FaceColor',[0.729411780834198 0.831372559070587 0.95686274766922]);
 normBinWidth=(Xvals(2)-Xvals(1))/10;
 hold on;
 for i=1:fit.NComponents
     mmgY(i,:)=fit.PComponents(i)*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i)));
-    plot(min(Xvals):normBinWidth:max(Xvals),fit.PComponents(i)*count*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i))),'r','LineWidth',2);
+    plot(min(Xvals):normBinWidth:max(Xvals),fit.PComponents(i)*count*normpdf(min(Xvals):normBinWidth:max(Xvals),fit.mu(i),sqrt(fit.Sigma(1,1,i))),'LineWidth',2,'Color',[0 0 0]);
 end
 mmgYcomb=sum(mmgY);
-plot(min(Xvals):normBinWidth:max(Xvals),count*mmgYcomb','g','LineWidth',2);
+plot(min(Xvals):normBinWidth:max(Xvals),count*mmgYcomb','LineWidth',2,'Color',[0 1 0]);
 
 set(gcf,'color','w');
 axis([min(Xvals)-(Xvals(2)-Xvals(1)) max(Xvals)*1.1 0 max(histVal)*1.1]);
@@ -249,8 +246,20 @@ if ~isempty(numComponents)
     BIC=fit.BIC;
 end
 
-end
+% Create title
+titleTxt = sprintf('Average velocity = %5.2f +/- %5.2f nm/s',vel_mean,vel_std);
+title(titleTxt,'FontWeight','bold','FontSize',16,...
+    'FontName','Times New Roman');
 
+% Create xlabel
+xlabel('Velocity (nm/s)','FontWeight','demi','FontSize',14,...
+    'FontName','Times New Roman');
+
+% Create ylabel
+ylabel('Number','FontWeight','demi','FontSize',14,...
+    'FontName','Times New Roman');
+
+end
 %% Plotting single exponential
    
 function [mu,mu_std] = fitSingleExp(data,range,plotDistr)
@@ -319,7 +328,7 @@ end
 
 %% Plot histogram and fit
 
-function pltExpFit(data,lowerCutOff,binRange)
+function fancyHistRL(data, lowerCutOff,binRange,RLmean,RLstd)
 
 [mustats(1),mustats(2)] = fitSingleExp(data,binRange,4);
 yval=hist(data,binRange);
@@ -327,21 +336,33 @@ yval=hist(data,binRange);
 a = exp(-lowerCutOff/mustats(1));
 % normalize to this area:
 yval2 = yval*a/sum(yval*(binRange(2)-binRange(1)));
-figure; set(0,'DefaultAxesFontSize',16);
-bar(binRange,yval2); hold on;
+% Create figure
+figure1 = figure('Color',[1 1 1]);
+
+% Create axes
+axes1 = axes('Parent',figure1,...
+    'Position',[0.149805447470817 0.130337078651685 0.755194552529183 0.794662921348315],...
+    'FontName','Times New Roman');
+bar(binRange,yval2,'FaceColor',[0.925490200519562 0.839215695858002 0.839215695858002]); hold on;
 (binRange(2)-binRange(1))/100;
 binRange2=binRange(1):(binRange(2)-binRange(1))/100:binRange(end);
 
-plot(binRange2,exp(-binRange2/mustats(1))/mustats(1),'r','linewidth',2);
+plot(binRange2,exp(-binRange2/mustats(1))/mustats(1),'LineWidth',2,'Color',[0 0 0]);
 axis([binRange(1) max(binRange)*1.1 0 max(yval2)*1.1]);
-set(gcf,'color','w');
 
-hold off;
-figure; set(0,'DefaultAxesFontSize',16);
-bar(binRange,yval); hold on;
-plot(binRange2,exp(-binRange2/mustats(1))/mustats(1) / a*sum(yval*(binRange(2)-binRange(1))),'r','linewidth',2);
-axis([0 max(binRange)*1.1 0 max(yval)*1.1]);
-set(gcf,'color','w');
-hold off;
+titleTxt = sprintf('Average run length = %5.2f +/- %5.2f \\mum',RLmean,RLstd);
+% Create title
+title(titleTxt,'FontWeight','bold',...
+    'FontSize',16,...
+    'FontName','Times New Roman');
+
+% Create xlabel
+xlabel('Run length (\mum)','FontWeight','demi','FontSize',14,...
+    'FontName','Times New Roman');
+
+% Create ylabel
+ylabel('Number of runs','FontWeight','demi','FontSize',14,...
+    'FontName','Times New Roman');
+%['Average run length = ',num2str(Runlength_mean),' +/- ',num2str(Runlength_std)])
 end
 end
