@@ -1,7 +1,7 @@
 function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(varargin)
 % Calc_Velocity_RunLength calculates the average velocity and run length for a
-% dataset of single molecule runs. Inputs are velocity (nm/s) and run
-% length (um).
+% dataset of single molecule runs. Inputs can be either velocity (nm/s) or run
+% length (um), or both. User can also change input optional parameters for 
 %
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
 %    Calc_Velocity_RunLength(runLength,[MaxRun])
@@ -30,11 +30,6 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %           
 %Written and used by the Reck-Peterson lab (http://reck-peterson.med.harvard.edu)
 %using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu): 
-%
-%           (Danuser command)   -->     (Sub-function command)
-%           plotMMGFit          -->     plotFit
-%           fitSingleExpCDF     -->     fitSingleExp
-%           pltExpFitHist       -->     pltExpFit
 
 %% Read inputs and return errors
 close all;                              %Close all open plots
@@ -132,7 +127,10 @@ if numvarargs == 3
         if size(velocity,1) ~= size(runlength,1)
             error('myApp:argChk','-->Velocity and run length are not the same size')
         end
-        %Determine if test3 is run length or velocity
+        disp('Velocity & run length data provided')
+        %Determine if test3 is run length or velocity input option
+        RunLengthFlag = 1;
+        VelocityFlag = 1;
         if test3 > 100
             VelMax = test3;
             MaxRun = cell2mat(optargs(:,1));   
@@ -141,10 +139,26 @@ if numvarargs == 3
             VelMax = cell2mat(optargs(:,2));
         end
     end
-    %Return error if they gave velocity or re
-    if 
+    %Return error if they gave velocity or run length and TWO input options
+    if size(test1,1) > 1 && size(test2,1) == 1 && size(test3,1) == 1
+        error('myApp:argChk','Cannot use two default parameters if only calculating a single plot')
     end
-    
+end
+
+if numvarargs == 4
+    %Read input options
+    velocity = cell2mat(varargin(:,1));
+    runlength = cell2mat(varargin(:,2));
+    MaxRun = cell2mat(varargin(:,3));
+    VelMax = cell2mat(varargin(:,4));
+    disp('Velocity & run length data provided')
+    if size(velocity,1) ~= size(runlength,1)
+            error('myApp:argChk','-->Velocity and run length are not the same size')
+    end
+    RunLengthFlag = 1;
+    VelocityFlag = 1;
+end
+
 %% Run plotting and fitting
 %Inputs
 RunRange = 0:1:MaxRun;                  %Range for run length plot
@@ -185,6 +199,11 @@ if VelocityFlag == 1
 end
 
 %% Subfunction for fitting exponential distribution
+%
+%           (Danuser command)   -->     (Sub-function command)
+%           plotMMGFit          -->     plotFit
+%           fitSingleExpCDF     -->     fitSingleExp
+%           pltExpFitHist       -->     pltExpFit
 
 function plotFit(data,numComponents,numBins,normalized)
 

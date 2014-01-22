@@ -1,11 +1,12 @@
 function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity_RunLength(varargin)
 % Calc_Velocity_RunLength calculates the average velocity and run length for a
-% dataset of single molecule runs. Inputs are velocity (nm/s) and run
-% length (um).
+% dataset of single molecule runs. Inputs can be either velocity (nm/s) or run
+% length (um), or both. User can also change input optional parameters for
+% setting X-axis limit for velocity and run length.
 %
 %SYNOPSIS [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std] = ...
-%    Calc_Velocity_RunLength(runLength,[MaxRun])
 %    Calc_Velocity_RunLength(velocity,[VelMax])
+%    Calc_Velocity_RunLength(runlength,[MaxRun])
 %    Calc_Velocity_RunLength(velocity,runlength,[MaxRun],[VelMax])
 %       
 %INPUT  velocity - velocity measurements (nm/s)
@@ -29,7 +30,7 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %            Exponential distribution of run lengths (number of runs)
 %           
 %Written and used by the Reck-Peterson lab (http://reck-peterson.med.harvard.edu)
-%using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu): 
+%using programs originally written by the Danuser lab (http://lccb.hms.harvard.edu). 
 
 %% Read inputs and return errors
 close all;                              %Close all open plots
