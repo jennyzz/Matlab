@@ -172,7 +172,7 @@ end
 
 %Plot histogram of velocity
 if VelocityFlag == 1
-    plotFitVel(velocity,1,bin_size/2:bin_size:VelMax,0,Velocity_mean,Velocity_std); 
+    plotFitVel(velocity,1,bin_size/2:bin_size:VelMax,0,Velocity_mean,Velocity_std,N); 
 end
 
 %Determine exponential decay of run lengths
@@ -188,7 +188,7 @@ end
 
 %Plot histogram of run lengths along with fitted exponential decay
 if RunLengthFlag == 1
-    fancyHistRL(runlength,0,RunRange,Runlength_mean,Runlength_std); 
+    fancyHistRL(runlength,0,RunRange,Runlength_mean,Runlength_std,N); 
 end
 
 %Print average run length and velocity to console
@@ -201,7 +201,7 @@ end
 
 %% Subfunction for fitting exponential distribution
 
-function plotFitVel(data,numComponents,numBins,normalized,vel_mean, vel_std)
+function plotFitVel(data,numComponents,numBins,normalized,vel_mean, vel_std,Total)
 
 options = statset('Display','final');
 if isempty(numComponents)
@@ -247,7 +247,7 @@ if ~isempty(numComponents)
 end
 
 % Create title
-titleTxt = sprintf('Average velocity = %5.2f +/- %5.2f nm/s',vel_mean,vel_std);
+titleTxt = sprintf('Average velocity = %5.2f +/- %5.2f nm/s (n = %3.0f)',vel_mean,vel_std,Total);
 title(titleTxt,'FontWeight','bold','FontSize',16,...
     'FontName','Times New Roman');
 
@@ -328,7 +328,7 @@ end
 
 %% Plot histogram and fit
 
-function fancyHistRL(data, lowerCutOff,binRange,RLmean,RLstd)
+function fancyHistRL(data, lowerCutOff,binRange,RLmean,RLstd,Total)
 
 [mustats(1),mustats(2)] = fitSingleExp(data,binRange,4);
 yval=hist(data,binRange);
@@ -350,7 +350,7 @@ binRange2=binRange(1):(binRange(2)-binRange(1))/100:binRange(end);
 plot(binRange2,exp(-binRange2/mustats(1))/mustats(1),'LineWidth',2,'Color',[0 0 0]);
 axis([binRange(1) max(binRange)*1.1 0 max(yval2)*1.1]);
 
-titleTxt = sprintf('Average run length = %5.2f +/- %5.2f \\mum',RLmean,RLstd);
+titleTxt = sprintf('Average run length = %5.2f +/- %5.2f \\mum (n = %3.0f)',RLmean,RLstd,Total);
 % Create title
 title(titleTxt,'FontWeight','bold',...
     'FontSize',16,...
