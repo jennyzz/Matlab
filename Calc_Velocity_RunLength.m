@@ -176,7 +176,7 @@ end
 
 %Plot histogram of velocity
 if VelocityFlag == 1
-    plotFitVel(velocity,1,bin_size/2:bin_size:VelMax,0,Velocity_mean,Velocity_std,N); 
+    plotFitVel(velocity,[],bin_size/2:bin_size:VelMax,0,Velocity_mean,Velocity_std,N); 
 end
 
 %Determine exponential decay of run lengths
