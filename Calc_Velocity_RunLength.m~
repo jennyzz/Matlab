@@ -166,8 +166,8 @@ RunRange = 0:1:MaxRun;                  %Range for run length plot
 if VelocityFlag == 1
     N=size(velocity,1);                     %Determine number of entries
     Velocity_mean=mean(velocity);           %Calculate mean velocity
-    if Velocity_mean > VelMax
-        error('myapp:argChk','Mean velocity > Maximum velocity limit for histogram, increase maximum velocity input')
+    if VelMax > Velocity_mean
+        error('myapp:argChk','Default vel
     end
     
     Velocity_std=std(velocity);             %Calculate std. dev. of velocity
