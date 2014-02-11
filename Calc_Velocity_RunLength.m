@@ -20,7 +20,8 @@ function [Runlength_mean,Runlength_std,Velocity_mean,Velocity_std]=Calc_Velocity
 %           VelMax = 200 nm/s
 %
 %OUTPUT Runlength_mean = average run length determined from exponential fit
-%       Runlength_std = standard deviation of run length from expon. fit
+%       Runlength_std = standard deviation of run length from bootstrap
+%       resampling
 %       Velocity_mean = average velocity
 %       Velocity_std = standard deviation of velocity       
 %
