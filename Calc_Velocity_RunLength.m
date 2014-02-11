@@ -187,7 +187,8 @@ end
 %Outputs
 if RunLengthFlag == 1
     Runlength_mean=RL_mean;                 
-    Runlength_std=RL_std;                   
+    mu=bootstrp(200,@fitSingleExp,runlength,10,0);
+    Runlength_std=std(mu);                   
 end
 
 %Plot histogram of run lengths along with fitted exponential decay
